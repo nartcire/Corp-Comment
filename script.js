@@ -1,5 +1,6 @@
 // -- GLOBAL -- //
 const MAX_CHARS = 150;
+const BASE_API_URL = "https://bytegrad.com/course-assets/js/1/api";
 
 const textareaEl = document.querySelector(".form__textarea");
 const counterEl = document.querySelector(".counter");
@@ -76,15 +77,35 @@ const submitHandler = (event) => {
   const daysAgo = 0;
 
   // new feedback item HTML
-  feedbackItem = {
-    upvoteCount,
-    company,
-    badgeLetter,
-    daysAgo,
-    text,
+  const feedbackItem = {
+    upvoteCount: upvoteCount,
+    company: company,
+    badgeLetter: badgeLetter,
+    daysAgo: daysAgo,
+    text: text,
   };
 
   renderFeedbackItem(feedbackItem);
+
+  // send feedback item to server
+  fetch(`${BASE_API_URL}/feedbacks`, {
+    method: "POST",
+    body: JSON.stringify(feedbackItem),
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        console.log("Something went wrong");
+        return;
+      }
+
+      console.log("Successfully submitted");
+    })
+    .catch((error) => console.log(error));
+
   textareaEl.value = "";
   submitBtnEl.blur();
   counterEl.textContent = MAX_CHARS;
@@ -93,7 +114,7 @@ const submitHandler = (event) => {
 formEl.addEventListener("submit", submitHandler);
 
 // -- FEEDBACK LIST COMPONENT -- //
-fetch("https://bytegrad.com/course-assets/js/1/api/feedbacks")
+fetch(`${BASE_API_URL}/feedbacks`)
   .then((res) => res.json())
   .then((data) => {
     data.feedbacks.forEach((feedbackItem) => {
